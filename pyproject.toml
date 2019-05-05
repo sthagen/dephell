@@ -111,21 +111,23 @@ dephell = "dephell.cli:entrypoint"
 [tool.poetry.dependencies]
 python = ">=3.5"
 aiohttp = "*"
-attrs = "*"
 cerberus = "*"
 jinja2 = "*"
 m2r = "*"
 pip = ">=18.0"
 pyyaml = "*"  # TODO: replace by ruamel.yaml when migrate from poetry format to flit
-requests = "*"
-setuptools = "*"
 tomlkit = "*"
-yaspin = "*"
 
 # vendored
 appdirs = {optional = true}
 colorama = {optional = true}
 packaging = {optional = true}
+
+# deps of the deps
+attrs = {optional = true}
+requests = {optional = true}
+setuptools = {optional = true}
+yaspin = {optional = true}
 
 # optional
 aiofiles = {optional = true}

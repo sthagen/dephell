@@ -45,7 +45,6 @@ for package in _packages:
     for vendor in _vendors:
         with suppress(Exception):
             globals()[package] = import_module(vendor + package)
-            print(vendor + package)
             logger.debug('imported package', extra=dict(
                 vendor=vendor.rstrip('.'),
                 package=package,
