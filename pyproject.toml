@@ -111,22 +111,25 @@ dephell = "dephell.cli:entrypoint"
 [tool.poetry.dependencies]
 python = ">=3.5"
 aiohttp = "*"
-appdirs = "*"
 attrs = "*"
 cerberus = "*"
 jinja2 = "*"
 m2r = "*"
-packaging = "*"
 pip = ">=18.0"
 pyyaml = "*"  # TODO: replace by ruamel.yaml when migrate from poetry format to flit
 requests = "*"
+setuptools = "*"
 tomlkit = "*"
 yaspin = "*"
+
+# vendored
+appdirs = {optional = true}
+colorama = {optional = true}
+packaging = {optional = true}
 
 # optional
 aiofiles = {optional = true}
 autopep8 = {optional = true}
-colorama = {optional = true}
 graphviz = {optional = true}
 yapf = {optional = true}
 
@@ -149,6 +152,7 @@ sphinx-rtd-theme = "*"
 pygments-github-lexers = "*"
 
 [tool.poetry.extras]
-full = ["aiofiles", "autopep8", "colorama", "graphviz", "yapf"]
+full = ["aiofiles", "autopep8", "graphviz", "yapf"]
+all = ["aiofiles", "autopep8", "graphviz", "yapf"]  # alias
 tests = ["pytest"]
 docs = ["sphinx", "recommonmark", "sphinx-rtd-theme", "pygments-github-lexers"]
