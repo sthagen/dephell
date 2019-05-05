@@ -2,10 +2,10 @@
 from pathlib import Path
 
 # external
-from appdirs import user_data_dir
+from .._vendor import appdirs
 
 
-data_dir = Path(user_data_dir('dephell'))
+data_dir = Path(appdirs.user_data_dir('dephell'))
 
 
 DEFAULT = dict(
