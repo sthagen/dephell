@@ -40,9 +40,19 @@ def override_env_vars(env_vars: Dict[str, str]):
 
 @contextmanager
 def override_argv(value):
-    old_value = sys.argv
+    old_argv = sys.argv
     sys.argv = value
     try:
         yield
     finally:
-        sys.argv = old_value
+        sys.argv = old_argv
+
+
+@contextmanager
+def override_python_path(path):
+    old_path = sys.path.copy()
+    sys.path.insert(0, path)
+    try:
+        yield
+    finally:
+        sys.path = old_path

@@ -13,7 +13,7 @@ from packaging.requirements import Requirement
 from setuptools.dist import Distribution
 
 # app
-from ..context_tools import chdir
+from ..context_tools import chdir, override_python_path
 from ..controllers import DependencyMaker, Readme
 from ..models import Author, EntryPoint, RootDependency
 from .base import BaseConverter
@@ -248,7 +248,7 @@ class SetupPyConverter(BaseConverter):
     # private methods
 
     @staticmethod
-    def _execute(path: Path):
+    def _execute(path: Path) -> Optional[Distribution]:
         source = path.read_text('utf-8')
         new_source = source.replace('setup(', '_dist = dict(')
         if new_source == source:
@@ -260,7 +260,7 @@ class SetupPyConverter(BaseConverter):
             '__name__': '__main__',
             'open': _patched_open,
         }
-        with chdir(path.parent):
+        with chdir(path.parent), override_python_path(path.parent):
             try:
                 exec(compile(new_source, path.name, 'exec'), globe)
             except Exception as e:
