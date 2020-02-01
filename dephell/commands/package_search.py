@@ -11,9 +11,8 @@ from .base import BaseCommand
 class PackageSearchCommand(BaseCommand):
     """Search packages on PyPI.org or Anaconda Cloud.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_output(parser)
         builders.build_api(parser)
@@ -27,5 +26,10 @@ class PackageSearchCommand(BaseCommand):
         if not results:
             self.logger.error('no results')
             return False
-        print(make_json(data=results, key=self.config.get('filter')))
+        print(make_json(
+            data=results,
+            key=self.config.get('filter'),
+            colors=not self.config['nocolors'],
+            table=self.config['table'],
+        ))
         return True

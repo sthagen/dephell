@@ -12,6 +12,7 @@ from dephell.repositories import GitRepo
 
 
 loop = asyncio.get_event_loop()
+git_path = Path('.git')
 
 
 class PatchedVCSLink(VCSLink):
@@ -23,6 +24,7 @@ class Dep:
 
 
 @pytest.mark.skipif('TRAVIS_OS_NAME' in environ, reason='Travis CI has broken git repo')
+@pytest.mark.skipif(not git_path.exists(), reason='.git folder does not exist')
 def test_releases():
     link = PatchedVCSLink(server=None, author=None, project=None, name='dephell')
     repo = GitRepo(link)
@@ -37,6 +39,7 @@ def test_releases():
 
 
 @pytest.mark.skipif('TRAVIS_OS_NAME' in environ, reason='Travis CI has broken git repo')
+@pytest.mark.skipif(not git_path.exists(), reason='.git folder does not exist')
 def test_deps():
     link = PatchedVCSLink(server=None, author=None, project=None, name='dephell')
     repo = GitRepo(link)
@@ -44,10 +47,11 @@ def test_deps():
     coroutine = repo.get_dependencies('dephell', '0.1.0')
     deps = loop.run_until_complete(asyncio.gather(coroutine))[0]
     assert len(deps) == 4
-    assert set(dep.name for dep in deps) == {'attrs', 'cached-property', 'packaging', 'requests'}
+    assert {dep.name for dep in deps} == {'attrs', 'cached-property', 'packaging', 'requests'}
 
 
 @pytest.mark.skipif('TRAVIS_OS_NAME' in environ, reason='Travis CI has broken git repo')
+@pytest.mark.skipif(not git_path.exists(), reason='.git folder does not exist')
 def test_metaversion():
     link = PatchedVCSLink(server=None, author=None, project=None, name='dephell')
     repo = GitRepo(link)

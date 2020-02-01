@@ -19,9 +19,8 @@ from .base import BaseCommand
 class JailInstallCommand(BaseCommand):
     """Download and install package into isolated environment.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_venv(parser)
         builders.build_resolver(parser)
@@ -76,14 +75,19 @@ class JailInstallCommand(BaseCommand):
         for entrypoint in entrypoints:
             if entrypoint.group != 'console_scripts':
                 continue
-            if not (venv.bin_path / entrypoint.name).exists():
+
+            entrypoint_filename = entrypoint.name
+            if IS_WINDOWS:
+                entrypoint_filename += '.exe'
+
+            if not (venv.bin_path / entrypoint_filename).exists():
                 self.logger.error('cannot find script in venv', extra=dict(script=entrypoint.name))
-            else:
-                self._publish_script(
-                    src=venv.bin_path / entrypoint.name,
-                    dst=Path(self.config['bin']) / entrypoint.name,
-                )
-                self.logger.info('copied', extra=dict(script=entrypoint.name))
+                continue
+            self._publish_script(
+                src=venv.bin_path / entrypoint_filename,
+                dst=Path(self.config['bin']) / entrypoint_filename,
+            )
+            self.logger.info('copied', extra=dict(script=entrypoint.name))
 
         return True
 
@@ -94,6 +98,5 @@ class JailInstallCommand(BaseCommand):
         if IS_WINDOWS:
             shutil.copy(str(src), str(dst))
         else:
-            # Python 3.5 cannot resove non-existing paths.
             dst = dst.parent.resolve() / dst.name
             dst.symlink_to(src)

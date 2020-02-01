@@ -15,9 +15,8 @@ from .base import BaseCommand
 class JailRemoveCommand(BaseCommand):
     """Remove package isolated environment.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_venv(parser)
         builders.build_output(parser)
@@ -38,10 +37,12 @@ class JailRemoveCommand(BaseCommand):
             self.logger.info('remove executables...')
             for entrypoint in venv.bin_path.iterdir():
                 global_entrypoint = Path(self.config['bin']) / entrypoint.name
-                if global_entrypoint.exists():
-                    if global_entrypoint.resolve().samefile(entrypoint):
-                        global_entrypoint.unlink()
-                        self.logger.info('removed', extra=dict(script=entrypoint.name))
+                if not global_entrypoint.exists():
+                    continue
+                if not global_entrypoint.resolve().samefile(entrypoint):
+                    continue
+                global_entrypoint.unlink()
+                self.logger.info('removed', extra=dict(script=entrypoint.name))
 
             # remove venv
             shutil.rmtree(venv.path)

@@ -1,22 +1,26 @@
 # built-in
 from argparse import ArgumentParser
 from pathlib import Path
-
-# external
-from bowler import Query
+from typing import TYPE_CHECKING
 
 # app
 from ..actions import transform_imports
 from ..config import builders
+from ..imports import lazy_import
 from .base import BaseCommand
+
+
+bowler = lazy_import('bowler')
+
+if TYPE_CHECKING:
+    import bowler
 
 
 class VendorImportCommand(BaseCommand):
     """Patch all imports in project to use vendored dependencies.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_from(parser)
         builders.build_resolver(parser)
@@ -26,6 +30,8 @@ class VendorImportCommand(BaseCommand):
         return parser
 
     def __call__(self) -> bool:
+        if bowler.Query is None:
+            raise RuntimeError('vendorization is unsupported on Windows')
         resolver = self._get_locked()
         if resolver is None:
             return False
@@ -37,7 +43,7 @@ class VendorImportCommand(BaseCommand):
 
     def _patch_imports(self, resolver, output_path: Path) -> int:
         # select modules to patch imports
-        query = Query()
+        query = bowler.Query()
         query.paths = []
         for package in resolver.graph.metainfo.package.packages:
             for module_path in package:

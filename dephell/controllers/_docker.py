@@ -1,17 +1,24 @@
 # built-in
 from logging import getLogger
 from pathlib import Path
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 # external
 import attr
-import docker
-import dockerpty
 from dephell_venvs import VEnvs
 
 # app
 from ..cached_property import cached_property
+from ..imports import lazy_import
 from ..networking import requests_session
+
+
+docker = lazy_import('docker')
+dockerpty = lazy_import('dockerpty')
+
+if TYPE_CHECKING:
+    import docker
+    import dockerpty
 
 
 DOCKER_PREFIX = 'dephell-'
@@ -19,7 +26,7 @@ DOCKER_PREFIX = 'dephell-'
 
 class DockerContainers:
     @cached_property
-    def client(self) -> docker.DockerClient:
+    def client(self) -> 'docker.DockerClient':
         return docker.from_env()
 
     def list(self):
@@ -76,18 +83,18 @@ class DockerContainer:
         return sorted(tags, key=lambda tag: tags[tag], reverse=True)
 
     @cached_property
-    def client(self) -> docker.DockerClient:
+    def client(self) -> 'docker.DockerClient':
         return docker.from_env()
 
     @cached_property
-    def container(self) -> Optional[docker.models.containers.Container]:
+    def container(self) -> Optional['docker.models.containers.Container']:
         try:
             return self.client.containers.get(self.container_name)
         except docker.errors.NotFound:
             return None
 
     @cached_property
-    def network(self) -> Optional[docker.models.networks.Network]:
+    def network(self) -> Optional['docker.models.networks.Network']:
         return self.client.networks.get(self.network_name)
 
     # public methods
@@ -152,6 +159,8 @@ class DockerContainer:
         return self.run(['sh', '-c', 'zsh || bash || sh'])
 
     def run(self, command: List[str]) -> None:
+        if dockerpty is None:
+            raise RuntimeError('cannot run Docker on Windows')
         self.container.start()
         dockerpty.exec_command(
             client=self.client.api,

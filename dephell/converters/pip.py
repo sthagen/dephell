@@ -6,9 +6,7 @@ from typing import Optional
 
 # external
 from dephell_discover import Root as PackageRoot
-from dephell_links import DirLink
-from pip._internal.download import PipSession
-from pip._internal.index import PackageFinder
+from dephell_links import DirLink, FileLink
 from pip._internal.req import parse_requirements
 
 # app
@@ -17,6 +15,22 @@ from ..controllers import DependencyMaker, RepositoriesRegistry
 from ..models import RootDependency
 from ..repositories import WarehouseBaseRepo, WarehouseLocalRepo
 from .base import BaseConverter
+
+
+try:
+    # pip<20.0.1
+    from pip._internal.index import PackageFinder
+except ImportError:
+    # pip>=20.0.1
+    from pip._internal.index.package_finder import PackageFinder
+
+try:
+    from pip._internal.download import PipSession
+except ImportError:
+    try:
+        from pip._internal.network import PipSession
+    except ImportError:
+        from pip._internal.network.session import PipSession
 
 
 class PIPConverter(BaseConverter):
@@ -132,13 +146,31 @@ class PIPConverter(BaseConverter):
         except TypeError:
             pass
 
+        # pip 19.3
         from pip._internal.models.search_scope import SearchScope
         from pip._internal.models.selection_prefs import SelectionPreferences
+        try:
+            return PackageFinder.create(
+                search_scope=SearchScope(find_links=[], index_urls=[]),
+                selection_prefs=SelectionPreferences(allow_yanked=False),
+                session=PipSession(),
+            )
+        except TypeError:
+            pass
 
+        from pip._internal.models.target_python import TargetPython
+        try:
+            # pip 19.3.1
+            from pip._internal.collector import LinkCollector
+        except ImportError:
+            from pip._internal.index.collector import LinkCollector
         return PackageFinder.create(
-            search_scope=SearchScope(find_links=[], index_urls=[]),
+            link_collector=LinkCollector(
+                search_scope=SearchScope(find_links=[], index_urls=[]),
+                session=PipSession(),
+            ),
             selection_prefs=SelectionPreferences(allow_yanked=False),
-            session=PipSession(),
+            target_python=TargetPython(),
         )
 
     # https://github.com/pypa/packaging/blob/master/packaging/requirements.py
@@ -149,12 +181,13 @@ class PIPConverter(BaseConverter):
             line += '-e '
         if req.link is not None:
             link = req.link.long
-            path = Path(link.split('#egg=')[0])
-            if path.exists():
-                link = str(self._make_dependency_path_relative(path))
-                link = link.replace('\\', '/')
-                if '/' not in link:
-                    link = './' + link
+            if isinstance(req.link, (DirLink, FileLink)):
+                path = Path(link.split('#egg=')[0])
+                if path.exists():
+                    link = str(self._make_dependency_path_relative(path))
+                    link = link.replace('\\', '/')
+                    if '/' not in link:
+                        link = './' + link
             line += link
         else:
             line += req.raw_name

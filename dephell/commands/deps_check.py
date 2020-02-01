@@ -12,9 +12,8 @@ from .base import BaseCommand
 class DepsCheckCommand(BaseCommand):
     """Show difference between venv and project dependencies.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_from(parser)
         builders.build_resolver(parser)
@@ -74,7 +73,12 @@ class DepsCheckCommand(BaseCommand):
             ))
 
         if data:
-            print(make_json(data=data, key=self.config.get('filter')))
+            print(make_json(
+                data=data,
+                key=self.config.get('filter'),
+                colors=not self.config['nocolors'],
+                table=self.config['table'],
+            ))
             return False
 
         self.logger.info('all packages is up-to-date')

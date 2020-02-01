@@ -23,13 +23,13 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='dephell',
-    version='0.7.7',
+    version='0.8.1',
     description='Dependency resolution for Python',
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     project_urls={
-        'homepage': 'https://dephell.org/',
-        'repository': 'https://github.com/dephell/dephell',
-        'documentation': 'https://dephell.org/docs/'
+        "documentation": "https://dephell.org/docs/",
+        "homepage": "https://dephell.org/",
+        "repository": "https://github.com/dephell/dephell"
     },
     author='Gram',
     author_email='master_fess@mail.ru',
@@ -39,40 +39,47 @@ setup(
         'Development Status :: 4 - Beta', 'Environment :: Console',
         'Framework :: Setuptools Plugin', 'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python', 'Topic :: Security',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8', 'Topic :: Security',
         'Topic :: Software Development :: Build Tools',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
-    entry_points={'console_scripts': ['dephell = dephell.cli:entrypoint']},
+    entry_points={"console_scripts": ["dephell = dephell.cli:entrypoint"]},
     packages=[
         'dephell', 'dephell.actions', 'dephell.commands', 'dephell.config',
         'dephell.controllers', 'dephell.converters', 'dephell.models',
         'dephell.repositories', 'dephell.repositories._conda',
         'dephell.repositories._git', 'dephell.repositories._warehouse'
     ],
-    package_data={'dephell': ['templates/*.j2', 'templates/*.sh']},
+    package_dir={"": "."},
+    package_data={"dephell": ["templates/*.j2", "templates/*.sh"]},
     install_requires=[
-        'aiohttp', 'appdirs', 'attrs', 'bowler; python_version >= "3.6"',
-        'bowler-py35>=0.9.1; python_version < "3.6"', 'cerberus>=1.3',
-        'dephell-archive>=0.1.5', 'dephell-discover>=0.2.6',
-        'dephell-licenses>=0.1.6', 'dephell-links>=0.1.4',
-        'dephell-markers>=1.0.0', 'dephell-pythons>=0.1.11',
+        'aiohttp', 'attrs>=19.2.0', 'cerberus>=1.3', 'dephell-archive>=0.1.5',
+        'dephell-argparse>=0.1.1', 'dephell-changelogs',
+        'dephell-discover>=0.2.6', 'dephell-licenses>=0.1.6',
+        'dephell-links>=0.1.4', 'dephell-markers>=1.0.0',
+        'dephell-pythons>=0.1.11', 'dephell-setuptools>=0.2.1',
         'dephell-shells>=0.1.3', 'dephell-specifier>=0.1.7',
-        'dephell-venvs>=0.1.16', 'dephell-versioning', 'docker', 'dockerpty',
-        'fissix; python_version >= "3.6"',
-        'fissix-py35; python_version < "3.6"', 'html5lib', 'jinja2', 'm2r',
-        'packaging', 'pip>=18.0', 'pyyaml', 'requests', 'setuptools', 'tomlkit',
+        'dephell-venvs>=0.1.16', 'dephell-versioning', 'jinja2', 'm2r',
+        'packaging', 'pip<=19.3.1,>=18.0', 'requests', 'ruamel.yaml', 'tomlkit',
         'yaspin'
     ],
     extras_require={
-        'full': ['aiofiles', 'autopep8', 'colorama', 'graphviz', 'yapf'],
-        'tests': ['aioresponses', 'pytest', 'requests-mock'],
-        'dev': [
-            'aioresponses', 'alabaster', 'flake8-isort', 'isort[pyproject]',
-            'pygments-github-lexers', 'pytest', 'recommonmark', 'requests-mock',
-            'sphinx'
+        "dev": [
+            "aioresponses", "alabaster", "flake8-isort", "isort[pyproject]",
+            "pygments-github-lexers", "pytest", "recommonmark", "requests-mock",
+            "sphinx"
         ],
-        'docs':
-        ['alabaster', 'pygments-github-lexers', 'recommonmark', 'sphinx']
+        "docs": [
+            "alabaster", "pygments-github-lexers", "recommonmark", "sphinx"
+        ],
+        "full": [
+            "aiofiles", "appdirs", "autopep8", "bowler", "colorama", "docker",
+            "dockerpty", "fissix", "flatdict", "graphviz", "html5lib",
+            "pygments", "tabulate", "yapf"
+        ],
+        "tests": ["aioresponses", "pytest", "requests-mock"]
     },
 )

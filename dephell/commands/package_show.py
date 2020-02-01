@@ -11,9 +11,8 @@ from .base import BaseCommand
 class PackageShowCommand(BaseCommand):
     """Show information about package from PyPI.org.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_venv(parser)
         builders.build_output(parser)
@@ -54,5 +53,10 @@ class PackageShowCommand(BaseCommand):
                 size=format_size(sum(get_path_size(place) for place in local_places)),
             ))
 
-        print(make_json(data=data, key=self.config.get('filter')))
+        print(make_json(
+            data=data,
+            key=self.config.get('filter'),
+            colors=not self.config['nocolors'],
+            table=self.config['table'],
+        ))
         return True

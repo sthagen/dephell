@@ -11,9 +11,8 @@ from .base import BaseCommand
 class DepsTreeCommand(BaseCommand):
     """Show dependencies tree.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_from(parser)
         builders.build_resolver(parser)
@@ -49,7 +48,12 @@ class DepsTreeCommand(BaseCommand):
                     latest=str(dep.groups.releases[0].version),
                     dependencies=[subdep.name for subdep in dep.dependencies],
                 ))
-            print(make_json(result, key=self.config.get('filter')))
+            print(make_json(
+                data=result,
+                key=self.config.get('filter'),
+                colors=not self.config['nocolors'],
+                table=self.config['table'],
+            ))
             return True
 
         if self.args.type == 'graph':

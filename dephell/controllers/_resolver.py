@@ -84,8 +84,10 @@ class Resolver:
         with spinner as spinner:
             while True:
                 resolved = self._resolve(debug=debug, silent=silent, level=level, spinner=spinner)
-                if resolved is not None:
-                    return resolved
+                if resolved is None:
+                    continue
+                self.graph.clear()  # remove unused deps from graph
+                return resolved
 
     def _resolve(self, debug: bool, silent: bool, level: Optional[int], spinner) -> Optional[bool]:
         if silent:
@@ -132,6 +134,9 @@ class Resolver:
                 dep.group = group
 
     def apply_envs(self, envs: set) -> None:
+        if not any(root.dependencies for root in self.graph.get_layer(0)):
+            logger.debug('no dependencies, nothing to filter')
+            return
         layer = self.graph.get_layer(1)
 
         # Unapply deps that we don't need
@@ -152,7 +157,7 @@ class Resolver:
 
         # Some child deps can be unapplied from other child deps, but we need them.
         # For example, if we need A, but don't need B, and A and B depends on C,
-        # then C will be unapplied from B. Let's retun B in the graph by apllying A.
+        # then C will be unapplied from B. Let's return B in the graph by re-applying A.
         for dep in self.graph:
             if not dep.applied:
                 continue

@@ -11,9 +11,8 @@ from .base import BaseCommand
 class DepsLicensesCommand(BaseCommand):
     """Show licenses for all project dependencies.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_from(parser)
         builders.build_resolver(parser)
@@ -36,5 +35,11 @@ class DepsLicensesCommand(BaseCommand):
             else:
                 licenses['Unknown'].add(dep.name)
         licenses = {name: sorted(deps) for name, deps in licenses.items()}
-        print(make_json(data=licenses, key=self.config.get('filter'), sep=None))
+        print(make_json(
+            data=licenses,
+            key=self.config.get('filter'),
+            colors=not self.config['nocolors'],
+            table=self.config['table'],
+            sep=None,
+        ))
         return True

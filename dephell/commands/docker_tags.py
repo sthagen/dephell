@@ -10,9 +10,8 @@ from .base import BaseCommand
 class DockerTagsCommand(BaseCommand):
     """Show available tags for image.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_docker(parser)
         builders.build_output(parser)
@@ -21,5 +20,10 @@ class DockerTagsCommand(BaseCommand):
 
     def __call__(self) -> bool:
         container = get_docker_container(config=self.config)
-        print(make_json(data=container.tags, key=self.config.get('filter')))
+        print(make_json(
+            data=container.tags,
+            key=self.config.get('filter'),
+            colors=not self.config['nocolors'],
+            table=self.config['table'],
+        ))
         return True

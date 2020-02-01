@@ -4,9 +4,6 @@ from importlib import import_module
 
 # keep sorted
 _NAMES = (
-    'auth',
-    'autocomplete',
-
     'deps add',
     'deps audit',
     'deps check',
@@ -27,6 +24,7 @@ _NAMES = (
 
     'generate authors',
     'generate config',
+    'generate contributing',
     'generate editorconfig',
     'generate license',
     'generate travis',
@@ -34,14 +32,19 @@ _NAMES = (
     'inspect auth',
     'inspect config',
     'inspect gadget',
+    'inspect project',
     'inspect self',
     'inspect venv',
+    'inspect versioning',
 
     'jail install',
     'jail list',
     'jail remove',
+    'jail show',
     'jail try',
 
+    'package bug',
+    'package changelog',
     'package downloads',
     'package install',
     'package list',
@@ -54,6 +57,12 @@ _NAMES = (
     'project build',
     'project bump',
     'project test',
+    'project validate',
+
+    'self auth',
+    'self autocomplete',
+    'self uncache',
+    'self upgrade',
 
     'vendor download',
     'vendor import',

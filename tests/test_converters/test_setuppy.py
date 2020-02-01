@@ -1,5 +1,6 @@
 # built-in
 from pathlib import Path
+from textwrap import dedent
 
 # external
 from dephell_links import VCSLink
@@ -9,16 +10,16 @@ from dephell.converters.setuppy import SetupPyConverter
 from dephell.models import Requirement
 
 
-def test_load_deps():
-    path = Path('tests') / 'requirements' / 'setup.py'
+def test_load_deps(requirements_path: Path):
+    path = requirements_path / 'setup.py'
     root = SetupPyConverter().load(path)
 
     needed = {'attrs', 'cached-property', 'packaging', 'requests', 'colorama', 'libtest'}
-    assert set(dep.name for dep in root.dependencies) == needed
+    assert {dep.name for dep in root.dependencies} == needed
 
 
-def test_load_metadata():
-    path = Path('tests') / 'requirements' / 'setup.py'
+def test_load_metadata(requirements_path: Path):
+    path = requirements_path / 'setup.py'
     root = SetupPyConverter().load(path)
 
     assert root.name == 'dephell'
@@ -29,8 +30,59 @@ def test_load_metadata():
     assert not root.license
 
 
-def test_dumps_deps():
-    path = Path('tests') / 'requirements' / 'setup.py'
+def test_dotted_setup_call(temp_path: Path):
+    path = temp_path / 'setup.py'
+    path.write_text(dedent("""
+        import setuptools
+        setuptools.setup(name='foo')
+        """))
+    root = SetupPyConverter().load(path)
+    assert root.name == 'foo'
+
+
+def test_return_setup_call(temp_path: Path):
+    path = temp_path / 'setup.py'
+    path.write_text(dedent("""
+        from setuptools import setup
+        def main():
+            return setup(name='foo')
+
+        if __name__ == '__main__':
+            main()
+        """))
+    root = SetupPyConverter().load(path)
+    assert root.name == 'foo'
+
+
+def test_run_setup_function(temp_path: Path):
+    path = temp_path / 'setup.py'
+    path.write_text(dedent("""
+        from setuptools import setup
+        def run_setup():
+            return setup(name='foo')
+
+        if __name__ == '__main__':
+            run_setup()
+        """))
+    root = SetupPyConverter().load(path)
+    assert root.name == 'foo'
+
+
+def test_import(temp_path: Path):
+    path = temp_path / 'local_module.py'
+    path.write_text(dedent('name = "imported"'))
+    path = temp_path / 'setup.py'
+    path.write_text(dedent("""
+        from setuptools import setup
+        import local_module
+        setup(name=local_module.name)
+        """))
+    root = SetupPyConverter().load(path)
+    assert root.name == 'imported'
+
+
+def test_dumps_deps(requirements_path: Path):
+    path = requirements_path / 'setup.py'
     converter = SetupPyConverter()
     resolver = converter.load_resolver(path)
     reqs = Requirement.from_graph(graph=resolver.graph, lock=False)
@@ -40,7 +92,7 @@ def test_dumps_deps():
     print(content)
     root = SetupPyConverter().loads(content)
     needed = {'attrs', 'cached-property', 'packaging', 'requests', 'colorama', 'libtest'}
-    assert set(dep.name for dep in root.dependencies) == needed
+    assert {dep.name for dep in root.dependencies} == needed
 
 
 def test_dependency_links_load():

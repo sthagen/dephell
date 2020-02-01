@@ -12,10 +12,8 @@ from .base import BaseCommand
 class PackageListCommand(BaseCommand):
     """Show all installed packages.
     """
-
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_venv(parser)
         builders.build_output(parser)
@@ -47,5 +45,10 @@ class PackageListCommand(BaseCommand):
                 authors=[str(author) for author in dep.authors],
                 updated=str(releases[0].time.date()),
             ))
-        print(make_json(data=data, key=self.config.get('filter')))
+        print(make_json(
+            data=data,
+            key=self.config.get('filter'),
+            colors=not self.config['nocolors'],
+            table=self.config['table'],
+        ))
         return True

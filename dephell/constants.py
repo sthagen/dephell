@@ -12,11 +12,12 @@ class ReturnCodes(Enum):
     COMMAND_ERROR = 1
     INVALID_CONFIG = 2
     UNKNOWN_EXCEPTION = 3
+    UNKNOWN_COMMAND = 4
 
 
 IS_WINDOWS = (os.name == 'nt') or (platform.system() == 'Windows')
 
-CONFIG_NAMES = ('poetry.toml', 'pyproject.toml')
+CONFIG_NAMES = ('dephell.toml', 'pyproject.toml')
 GLOBAL_CONFIG_NAME = 'config.toml'
 ENV_VAR_TEMPLATE = 'DEPHELL_{}'
 
@@ -44,7 +45,7 @@ NON_PATH_FORMATS = ('imports', 'installed')
 
 FILES = (
     'setup.py',
-    'pyproject.toml', 'pyproject.lock',
+    'pyproject.toml', 'pyproject.lock', 'poetry.toml',
     'requirements.in', 'requirements.txt',
     'Pipfile', 'Pipfile.lock',
     'environment.yml', 'environment.yaml',
@@ -100,11 +101,14 @@ ARCHIVE_EXTENSIONS = (
 
 DEPHELL_ECOSYSTEM = (
     'dephell_archive',
+    'dephell_argparse',
+    'dephell_changelogs',
     'dephell_discover',
     'dephell_licenses',
     'dephell_links',
     'dephell_markers',
     'dephell_pythons',
+    'dephell_setuptools',
     'dephell_shells',
     'dephell_specifier',
     'dephell_venvs',

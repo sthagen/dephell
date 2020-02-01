@@ -10,9 +10,8 @@ from .base import BaseCommand
 class InspectConfigCommand(BaseCommand):
     """Show current config.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_from(parser)
         builders.build_to(parser)
@@ -26,5 +25,10 @@ class InspectConfigCommand(BaseCommand):
     def __call__(self) -> bool:
         config = self.config._data.copy()
         del config['auth']  # do not show credentials
-        print(make_json(data=config, key=self.config.get('filter')))
+        print(make_json(
+            data=config,
+            key=self.config.get('filter'),
+            colors=not self.config['nocolors'],
+            table=self.config['table'],
+        ))
         return True

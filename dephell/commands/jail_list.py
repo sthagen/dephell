@@ -12,9 +12,8 @@ from .base import BaseCommand
 class JailListCommand(BaseCommand):
     """Show all jails and their entrypoints.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_venv(parser)
         builders.build_output(parser)
@@ -32,5 +31,11 @@ class JailListCommand(BaseCommand):
             if venv_path.match(venvs_path):
                 entrypoints[venv_path.name].append(entrypoint.name)
 
-        print(make_json(data=dict(entrypoints), key=self.config.get('filter'), sep=None))
+        print(make_json(
+            data=dict(entrypoints),
+            key=self.config.get('filter'),
+            colors=not self.config['nocolors'],
+            table=self.config['table'],
+            sep=None,
+        ))
         return True

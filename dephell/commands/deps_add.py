@@ -15,12 +15,8 @@ from .base import BaseCommand
 class DepsAddCommand(BaseCommand):
     """Add new packages into project dependencies.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = ArgumentParser(
-            prog='dephell deps add',
-            description=cls.__doc__,
-        )
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_from(parser)
         builders.build_resolver(parser)
@@ -33,7 +29,7 @@ class DepsAddCommand(BaseCommand):
     def __call__(self) -> bool:
         # get current deps
         if 'from' not in self.config:
-            self.error('`--from` is required for this command')
+            self.logger.error('`--from` is required for this command')
             return False
         converter = CONVERTERS[self.config['from']['format']]
         converter = converter.copy(project_path=Path(self.config['project']))

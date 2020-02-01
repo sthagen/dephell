@@ -13,9 +13,8 @@ from .base import BaseCommand
 class InspectVenvCommand(BaseCommand):
     """Show virtual environment information for current project.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_venv(parser)
         builders.build_output(parser)
@@ -40,5 +39,10 @@ class InspectVenvCommand(BaseCommand):
                 lib_size=format_size(get_path_size(venv.lib_path)),
                 python=str(venv.python_path),
             ))
-        print(make_json(data=data, key=self.config.get('filter')))
+        print(make_json(
+            data=data,
+            key=self.config.get('filter'),
+            colors=not self.config['nocolors'],
+            table=self.config['table'],
+        ))
         return True

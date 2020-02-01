@@ -10,7 +10,6 @@ from urllib.parse import parse_qs, quote, urljoin, urlparse
 
 # external
 import attr
-import html5lib
 from dephell_specifier import RangeSpecifier
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
@@ -20,11 +19,13 @@ from ...cache import JSONCache, TextCache
 from ...config import config
 from ...constants import ARCHIVE_EXTENSIONS
 from ...exceptions import PackageNotFoundError
+from ...imports import import_module
 from ...models.release import Release
 from ...networking import requests_session
 from ._base import WarehouseBaseRepo
 
 
+html5lib = import_module('html5lib')
 logger = getLogger('dephell.repositories.warehouse.simple')
 
 
@@ -32,6 +33,7 @@ logger = getLogger('dephell.repositories.warehouse.simple')
 class WarehouseSimpleRepo(WarehouseBaseRepo):
     name = attr.ib(type=str)
     url = attr.ib(type=str)
+    pretty_url = attr.ib(type=str, default='')
     auth = attr.ib(default=None)
 
     prereleases = attr.ib(type=bool, factory=lambda: config['prereleases'])  # allow prereleases
@@ -42,22 +44,9 @@ class WarehouseSimpleRepo(WarehouseBaseRepo):
         # make name canonical
         if self.name in ('pypi.org', 'pypi.python.org'):
             self.name = 'pypi'
-
-        # replace link on pypi api by link on simple index
-        parsed = urlparse(self.url)
-        if parsed.hostname == 'pypi.python.org':
-            hostname = 'pypi.org'
-        else:
-            hostname = parsed.hostname
-        if hostname in ('pypi.org', 'test.pypi.org'):
-            path = '/simple/'
-        else:
-            path = parsed.path
-        self.url = parsed.scheme + '://' + hostname + path
-
-    @property
-    def pretty_url(self) -> str:
-        return self.url
+        if not self.pretty_url:
+            self.pretty_url = self.url
+        self.url = self._get_url(self.url, default_path='/simple/')
 
     def get_releases(self, dep) -> tuple:
         links = self._get_links(name=dep.base_name)

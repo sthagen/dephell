@@ -10,9 +10,8 @@ from .base import BaseCommand
 class DepsOutdatedCommand(BaseCommand):
     """Show outdated project dependencies.
     """
-    @classmethod
-    def get_parser(cls) -> ArgumentParser:
-        parser = cls._get_default_parser()
+    @staticmethod
+    def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
         builders.build_from(parser)
         builders.build_output(parser)
@@ -41,7 +40,12 @@ class DepsOutdatedCommand(BaseCommand):
             ))
 
         if data:
-            print(make_json(data=data, key=self.config.get('filter')))
+            print(make_json(
+                data=data,
+                key=self.config.get('filter'),
+                colors=not self.config['nocolors'],
+                table=self.config['table'],
+            ))
             return False
 
         self.logger.info('all dependencies is up-to-date')
