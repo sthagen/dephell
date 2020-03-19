@@ -53,10 +53,13 @@ _NAMES = (
     'package remove',
     'package search',
     'package show',
+    'package verify',
 
     'project build',
     'project bump',
+    'project register',
     'project test',
+    'project upload',
     'project validate',
 
     'self auth',
@@ -69,6 +72,7 @@ _NAMES = (
 
     'venv create',
     'venv destroy',
+    'venv entrypoint',
     'venv run',
     'venv shell',
 )

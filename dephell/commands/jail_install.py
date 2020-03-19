@@ -7,18 +7,17 @@ from pathlib import Path
 from dephell_venvs import VEnvs
 
 # app
-from ..actions import get_entrypoints, get_python, get_resolver
+from ..actions import get_entrypoints, get_python, get_resolver, install_deps
 from ..config import builders
 from ..constants import IS_WINDOWS
-from ..controllers import analyze_conflict
-from ..models import Requirement
-from ..package_manager import PackageManager
 from .base import BaseCommand
 
 
 class JailInstallCommand(BaseCommand):
     """Download and install package into isolated environment.
     """
+    find_config = False
+
     @staticmethod
     def build_parser(parser) -> ArgumentParser:
         builders.build_config(parser)
@@ -32,15 +31,6 @@ class JailInstallCommand(BaseCommand):
     def __call__(self) -> bool:
         resolver = get_resolver(reqs=self.args.name)
         name = next(iter(resolver.graph.get_layer(0))).dependencies[0].name
-
-        # resolve (and merge)
-        self.logger.info('build dependencies graph...')
-        resolved = resolver.resolve(silent=self.config['silent'])
-        if not resolved:
-            conflict = analyze_conflict(resolver=resolver)
-            self.logger.warning('conflict was found')
-            print(conflict)
-            return False
 
         # make venv
         venvs = VEnvs(path=self.config['venv'])
@@ -56,13 +46,13 @@ class JailInstallCommand(BaseCommand):
         venv.create(python_path=python.path)
 
         # install
-        reqs = Requirement.from_graph(graph=resolver.graph, lock=True)
-        self.logger.info('installation...', extra=dict(
-            executable=venv.python_path,
-            packages=len(reqs),
-        ))
-        code = PackageManager(executable=venv.python_path).install(reqs=reqs)
-        if code != 0:
+        ok = install_deps(
+            resolver=resolver,
+            python_path=venv.python_path,
+            logger=self.logger,
+            silent=self.config['silent'],
+        )
+        if not ok:
             return False
 
         # get entrypoints
