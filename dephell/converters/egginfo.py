@@ -2,14 +2,16 @@
 from collections import defaultdict
 from email.parser import Parser
 from itertools import chain
+from logging import getLogger
 from pathlib import Path
 from typing import Dict, Optional
 
 # external
+import attr
 from dephell_discover import Root as PackageRoot
 from dephell_links import parse_link
 from dephell_markers import Markers
-from packaging.requirements import Requirement as PackagingRequirement
+from packaging.requirements import InvalidRequirement, Requirement as PackagingRequirement
 
 # app
 from ..constants import DOWNLOAD_FIELD, HOMEPAGE_FIELD
@@ -20,6 +22,7 @@ from .setuppy import SetupPyConverter
 
 
 class _Reader:
+    logger = getLogger('dephell.converters.egginfo')
 
     def can_parse(self, path: Path, content: Optional[str] = None) -> bool:
         if isinstance(path, str):
@@ -151,7 +154,15 @@ class _Reader:
         # dependencies
         deps = []
         for req in cls._get_list(info, 'Requires-Dist'):
-            req = PackagingRequirement(req)
+            try:
+                req = PackagingRequirement(req)
+            except InvalidRequirement:
+                cls.logger.warning('invalid requirement', extra=dict(
+                    requirement=req,
+                    package_name=root.name,
+                    package_version=root.version,
+                ))
+                continue
             deps.extend(DependencyMaker.from_requirement(
                 source=root,
                 req=req,
@@ -391,9 +402,10 @@ class _Writer:
         return line
 
 
+@attr.s()
 class EggInfoConverter(_Reader, _Writer, BaseConverter):
     """
     PEP-314, PEP-345, PEP-566
     https://packaging.python.org/specifications/core-metadata/
     """
-    lock = False
+    lock = attr.ib(type=bool, default=False)

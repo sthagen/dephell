@@ -35,7 +35,10 @@ class DepsTreeCommand(BaseCommand):
 
         if self.args.type == 'pretty':
             for dep in sorted(resolver.graph.get_layer(1)):
-                print('\n'.join(self._make_tree(dep)))
+                if not dep.applied:
+                    continue
+                content = '\n'.join(self._make_tree(dep))
+                print(self._colorize(content))
             return True
 
         if self.args.type == 'json':
@@ -63,14 +66,35 @@ class DepsTreeCommand(BaseCommand):
 
     @classmethod
     def _make_tree(cls, dep, *, level: int = 0) -> List[str]:
-        lines = ['{level}- {name} [required: {constraint}, locked: {best}, latest: {latest}]'.format(
+        best = dep.group.best_release.version
+        latest = dep.group.best_release.version
+        if best == latest:
+            template = '{level}- {name} [required: `{constraint}`, latest: `{latest}`]'
+        else:
+            template = '{level}- {name} [required: `{constraint}`, locked: `{best}`, latest: `{latest}`]'
+        lines = [template.format(
             level='  ' * level,
             name=dep.name,
             constraint=str(dep.constraint) or '*',
-            best=str(dep.group.best_release.version),
-            latest=str(dep.groups.releases[0].version),
+            best=str(best),
+            latest=str(latest),
         )]
         deps = {dep.name: dep for dep in dep.dependencies}.values()  # drop duplicates
         for subdep in sorted(deps):
             lines.extend(cls._make_tree(subdep, level=level + 1))
         return lines
+
+    @staticmethod
+    def _colorize(content: str) -> str:
+        try:
+            import pygments
+            import pygments.lexers
+            import pygments.formatters
+        except ImportError:
+            return content
+        content = pygments.highlight(
+            code=content,
+            lexer=pygments.lexers.MarkdownLexer(),
+            formatter=pygments.formatters.TerminalFormatter(),
+        )
+        return content.strip()
