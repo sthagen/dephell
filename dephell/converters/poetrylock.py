@@ -9,10 +9,11 @@ import tomlkit
 from dephell_discover import Root as PackageRoot
 from dephell_links import DirLink
 from dephell_specifier import RangeSpecifier
+from tomlkit.items import Table
 
 # app
 from ..controllers import DependencyMaker, RepositoriesRegistry
-from ..models import Constraint, Dependency, RootDependency
+from ..models import Constraint, Dependency, Requirement, RootDependency
 from ..repositories import WarehouseBaseRepo, WarehouseLocalRepo
 from .base import BaseConverter
 
@@ -117,12 +118,12 @@ class PoetryLockConverter(BaseConverter):
         # get link
         url = None
         if 'source' in content:
-            if content['source']['type'] == 'legacy':
+            if content['source'].get('type') == 'legacy':
                 repo = repo.make(content['source']['reference'])
             else:
                 repo = None
                 url = content['source']['url']
-                if content['source']['type'] == 'git':
+                if content['source'].get('type') == 'git':
                     url = 'git+' + url
                     if 'reference' in content['source']:
                         url += '@' + content['source']['reference']
@@ -191,7 +192,7 @@ class PoetryLockConverter(BaseConverter):
 
         return deps
 
-    def _format_req(self, req):
+    def _format_req(self, req: Requirement) -> Table:
         result = tomlkit.table()
         for name, value in req:
             if name in self.fields:
